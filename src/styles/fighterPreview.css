@@ -11,3 +11,21 @@
 .fighter-preview___left {
   align-items: flex-start;
 }
+
+.fighter-preview___right img,
+.fighter-preview___left img {
+  height: 350px;
+}
+
+.fighter-preview___right img {
+  transform: scaleX(-1);
+}
+
+.fighter-preview___description {
+  padding-left: 15px;
+  width: 250px;
+  color: wheat;
+  font-size: 25px;
+  font-weight: 700;
+  background-color: rgba(0, 0, 0, 0.6);
+}
