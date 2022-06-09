@@ -2,7 +2,10 @@ import { controls } from '../../constants/controls';
 
 export async function fight(firstFighter, secondFighter) {
   return new Promise((resolve) => {
-    // resolve the promise with the winner when fight is over
+    document.body.addEventListener('keydown', (event) => {
+      if (event.code === 'KeyA') resolve(firstFighter);
+    });
+    //resolve the promise with the winner when fight is over
   });
 }
 
