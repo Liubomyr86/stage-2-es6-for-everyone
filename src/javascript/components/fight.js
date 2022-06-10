@@ -20,3 +20,17 @@ export function getHitPower(fighter) {
 export function getBlockPower(fighter) {
   // return block power
 }
+
+function elementHP(side) {
+  return document.getElementById(`${side}-fighter-indicator`);
+}
+
+class Fighter {
+  constructor(fighter, side) {
+    this.fighter = fighter;
+    this.fighterHealth = fighter.health;
+    this.elementHP = elementHP(side);
+    this.isDefense = false;
+    this.isCritical = false;
+  }
+}
