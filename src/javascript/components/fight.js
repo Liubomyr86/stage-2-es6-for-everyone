@@ -8,13 +8,25 @@ export async function fight(firstFighter, secondFighter) {
     const rightFighter = new Fighter(secondFighter, 'right');
     const attackListner = (event) => {
       let keyCode = event.code;
-      const { PlayerOneAttack, PlayerOneBlock, PlayerTwoAttack, PlayerTwoBlock } = controls;
-      let { PlayerOneCriticalHitCombination, PlayerTwoCriticalHitCombination } = controls;
-
-      PlayerOneCriticalHitCombination = PlayerOneCriticalHitCombination.sort().join('');
-      PlayerTwoCriticalHitCombination = PlayerTwoCriticalHitCombination.sort().join('');
       pressedButtons.add(keyCode);
-      keyCode = [...pressedButtons].sort().join('');
+
+      const {
+        PlayerOneAttack,
+        PlayerOneBlock,
+        PlayerTwoAttack,
+        PlayerTwoBlock,
+        PlayerOneCriticalHitCombination,
+        PlayerTwoCriticalHitCombination
+      } = controls;
+      const PlayerFirstCriticalHitCombination = PlayerOneCriticalHitCombination.sort().join('');
+      const PlayerSecondCriticalHitCombination = PlayerTwoCriticalHitCombination.sort().join('');
+      const criticalHitAttackKeysCode = isCriticalHitAttack(
+        pressedButtons,
+        PlayerOneCriticalHitCombination,
+        PlayerTwoCriticalHitCombination
+      );
+
+      if (criticalHitAttackKeysCode) keyCode = criticalHitAttackKeysCode;
 
       switch (keyCode) {
         case PlayerOneAttack:
@@ -29,10 +41,10 @@ export async function fight(firstFighter, secondFighter) {
         case PlayerTwoBlock:
           rightFighter.isDefense = true;
           break;
-        case PlayerOneCriticalHitCombination:
+        case PlayerFirstCriticalHitCombination:
           criticalAttackHandler(leftFighter, rightFighter, resolve, removeListners);
           break;
-        case PlayerTwoCriticalHitCombination:
+        case PlayerSecondCriticalHitCombination:
           criticalAttackHandler(rightFighter, leftFighter, resolve, removeListners);
           break;
       }
@@ -135,4 +147,19 @@ function setCriticalAttackTimeout(fighter, time) {
   setTimeout(() => {
     fighter.isCriticalHit = false;
   }, time);
+}
+
+function isCriticalHitAttack(set, firstCriticalHitCombination, secondCriticalHitCombination) {
+  let firstFighter = null;
+  let secondFighter = null;
+  const firstFighterAttack = firstCriticalHitCombination.every((key) => set.has(key));
+  const secondFighterAttack = secondCriticalHitCombination.every((key) => set.has(key));
+
+  if (firstFighterAttack || secondFighterAttack) {
+    if (firstFighterAttack) {
+      return (firstFighter = firstCriticalHitCombination.sort().join(''));
+    } else {
+      return (secondFighter = secondCriticalHitCombination.sort().join(''));
+    }
+  }
 }
