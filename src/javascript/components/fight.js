@@ -1,12 +1,20 @@
 import { controls } from '../../constants/controls';
 
+const pressedButtons = new Set();
+
 export async function fight(firstFighter, secondFighter) {
   return new Promise((resolve) => {
     const leftFighter = new Fighter(firstFighter, 'left');
     const rightFighter = new Fighter(secondFighter, 'right');
     const attackListner = (event) => {
-      const keyCode = event.code;
+      let keyCode = event.code;
       const { PlayerOneAttack, PlayerOneBlock, PlayerTwoAttack, PlayerTwoBlock } = controls;
+      let { PlayerOneCriticalHitCombination, PlayerTwoCriticalHitCombination } = controls;
+
+      PlayerOneCriticalHitCombination = PlayerOneCriticalHitCombination.sort().join('');
+      PlayerTwoCriticalHitCombination = PlayerTwoCriticalHitCombination.sort().join('');
+      pressedButtons.add(keyCode);
+      keyCode = [...pressedButtons].sort().join('');
 
       switch (keyCode) {
         case PlayerOneAttack:
@@ -21,11 +29,19 @@ export async function fight(firstFighter, secondFighter) {
         case PlayerTwoBlock:
           rightFighter.isDefense = true;
           break;
+        case PlayerOneCriticalHitCombination:
+          criticalAttackHandler(leftFighter, rightFighter, resolve, removeListners);
+          break;
+        case PlayerTwoCriticalHitCombination:
+          criticalAttackHandler(rightFighter, leftFighter, resolve, removeListners);
+          break;
       }
     };
     const defenseListner = (event) => {
       const keyCode = event.code;
-      const { PlayerOneAttack, PlayerOneBlock, PlayerTwoAttack, PlayerTwoBlock } = controls;
+      const { PlayerOneBlock, PlayerTwoBlock } = controls;
+
+      pressedButtons.delete(keyCode);
 
       switch (keyCode) {
         case PlayerOneBlock:
@@ -76,7 +92,7 @@ class Fighter {
     this.fighterHealth = fighter.health;
     this.elementHP = elementHP(side);
     this.isDefense = false;
-    this.isCritical = false;
+    this.isCriticalHit = false;
   }
 }
 
@@ -93,4 +109,30 @@ function attackHandler(firstFighter, secondFighter, resolve, removeListners) {
       removeListners();
     }
   }
+}
+
+function getCriticalDamage(attacker) {
+  return attacker.attack * 2;
+}
+
+function criticalAttackHandler(firstFighter, secondFighter, resolve, removeListners) {
+  if (!firstFighter.isCriticalHit) {
+    const firstFighterDamage = getCriticalDamage(firstFighter.fighter);
+    firstFighterDamage > secondFighter.fighterHealth
+      ? (secondFighter.fighterHealth = 0)
+      : (secondFighter.fighterHealth -= firstFighterDamage);
+    secondFighter.elementHP.style.width = `${(100 / secondFighter.fighter.health) * secondFighter.fighterHealth}%`;
+    firstFighter.isCriticalHit = true;
+    setCriticalAttackTimeout(firstFighter, 10000);
+    if (secondFighter.fighterHealth === 0) {
+      resolve(firstFighter.fighter);
+      removeListners();
+    }
+  }
+}
+
+function setCriticalAttackTimeout(fighter, time) {
+  setTimeout(() => {
+    fighter.isCriticalHit = false;
+  }, time);
 }
